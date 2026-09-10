@@ -343,6 +343,45 @@ async def seed() -> None:
                     },
                 )
 
+        print("Seeding demo mandi prices (source=DEMO_SEED)...")
+        yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date()
+        demo_prices = [
+            ("Wheat", "Sharbati", "Sehore Mandi", "Sehore", "Madhya Pradesh", yesterday, 2400.0, 2650.0, 2520.0),
+            ("Wheat", "Lokwan", "Sehore Mandi", "Sehore", "Madhya Pradesh", yesterday, 2275.0, 2450.0, 2380.0),
+            ("Soyabean", "Yellow", "Sehore Mandi", "Sehore", "Madhya Pradesh", yesterday, 4600.0, 4950.0, 4820.0),
+            ("Gram", "Desi", "Sehore Mandi", "Sehore", "Madhya Pradesh", yesterday, 5200.0, 5600.0, 5450.0),
+            ("Wheat", "Mill Quality", "Hoshangabad Mandi", "Hoshangabad", "Madhya Pradesh", yesterday, 2275.0, 2400.0, 2350.0),
+            ("Paddy(Dhan)", "Basmati", "Hoshangabad Mandi", "Hoshangabad", "Madhya Pradesh", yesterday, 3200.0, 3750.0, 3500.0),
+            ("Mustard", "Black", "Raisen Mandi", "Raisen", "Madhya Pradesh", yesterday, 5100.0, 5650.0, 5420.0),
+            ("Wheat", "Lokwan", "Raisen Mandi", "Raisen", "Madhya Pradesh", yesterday, 2250.0, 2420.0, 2360.0),
+            ("Wheat", "Sharbati", "Vidisha Mandi", "Vidisha", "Madhya Pradesh", yesterday, 2450.0, 2700.0, 2580.0),
+            ("Gram", "Dollar", "Vidisha Mandi", "Vidisha", "Madhya Pradesh", yesterday, 5400.0, 6100.0, 5800.0),
+        ]
+
+        for comm, var, mkt, dist, st, arr_date, min_p, max_p, mod_p in demo_prices:
+            price_id = f"price-seed-{mkt[:4].lower()}-{comm[:4].lower()}-{var[:3].lower()}"
+            await db.execute(
+                text("""
+                    INSERT INTO mandi_prices (
+                        id, commodity, variety, market, district, state, arrival_date,
+                        min_price, max_price, modal_price, unit, source, source_record_id, fetched_at
+                    ) VALUES (
+                        :id, :comm, :var, :mkt, :dist, :st, :arr_date,
+                        :min_p, :max_p, :mod_p, '₹/quintal', 'DEMO_SEED', :src_rec, :fetched_at
+                    ) ON CONFLICT ON CONSTRAINT uq_mandi_prices_natural_key DO UPDATE SET
+                        min_price = EXCLUDED.min_price,
+                        max_price = EXCLUDED.max_price,
+                        modal_price = EXCLUDED.modal_price,
+                        fetched_at = EXCLUDED.fetched_at,
+                        updated_at = NOW()
+                """),
+                {
+                    "id": price_id, "comm": comm, "var": var, "mkt": mkt, "dist": dist, "st": st,
+                    "arr_date": arr_date, "min_p": min_p, "max_p": max_p, "mod_p": mod_p,
+                    "src_rec": f"seed-rec-{price_id}", "fetched_at": now_utc(),
+                }
+            )
+
         await db.commit()
         print("Seed complete!")
         print(f"Officer password used: {OFFICER_PASSWORD}")

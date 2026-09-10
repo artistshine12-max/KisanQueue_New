@@ -31,12 +31,15 @@ pytestmark = [pytest.mark.db]
 FARMER_PHONE = "+919876543210"
 FARMER_OTP = "1234"
 OFFICER_USER = "officer_rajgarh"
-OFFICER_PASS = "KisanQueue!2026Secure"
+import os
+OFFICER_PASS = os.environ.get("SEED_ADMIN_PASSWORD", "Demo@1234")
 
+
+import secrets
 
 async def _farmer_token(client: AsyncClient, phone: str | None = None) -> str:
     """Return a valid farmer JWT."""
-    p = phone or f"+91987654{int(time.time() * 10000) % 10000:04d}"
+    p = phone or f"+919{secrets.randbelow(900000000) + 100000000}"
     r = await client.post("/v1/auth/otp/request", json={"phone": p})
     assert r.status_code == 200
     r = await client.post(
@@ -240,26 +243,21 @@ async def test_expired_qr_token_is_rejected(async_client: AsyncClient) -> None:
     real_qr = pass_data["qr_payload"]
 
     # Decode the real QR, tamper the 'exp' to be in the past, re-sign.
-    # QR format: base64url(json_payload) + "." + base64url(hmac)
-    parts = real_qr.split(".")
+    # QR format: KQ:<base64url(json_payload)>.<hmac-sha256-hex>
+    assert real_qr.startswith("KQ:"), f"Expected QR to start with 'KQ:', got {real_qr}"
+    body = real_qr[3:]  # Strip 'KQ:' prefix
+    parts = body.split(".")
     assert len(parts) == 2, "Unexpected QR payload format"
 
     payload_json = base64.urlsafe_b64decode(parts[0] + "==").decode()
     payload_dict = json.loads(payload_json)
 
-    # Set exp to 1 second ago.
-    payload_dict["exp"] = int(time.time()) - 1
-    expired_payload_bytes = json.dumps(payload_dict, separators=(",", ":")).encode()
-    expired_b64 = base64.urlsafe_b64encode(expired_payload_bytes).rstrip(b"=").decode()
+    # Set exp to in the past (e.g. 10 seconds ago).
+    payload_dict["exp"] = int(time.time()) - 10
 
-    # Re-sign with the real secret so the signature check passes.
-    new_sig = hmac.new(
-        settings.QR_HMAC_SECRET.encode(),
-        expired_b64.encode(),
-        hashlib.sha256,
-    ).digest()
-    new_sig_b64 = base64.urlsafe_b64encode(new_sig).rstrip(b"=").decode()
-    expired_qr = f"{expired_b64}.{new_sig_b64}"
+    # Re-sign with the real secret using the canonical sign_qr_payload helper
+    from core.security import sign_qr_payload
+    expired_qr = sign_qr_payload(payload_dict)
 
     officer_headers = {"Authorization": f"Bearer {officer_tok}"}
     r = await async_client.post(

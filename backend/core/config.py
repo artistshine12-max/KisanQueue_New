@@ -80,6 +80,17 @@ class Settings(BaseSettings):
     EKHARID_API_BASE_URL: str | None = None
     EKHARID_API_KEY: str | None = None
 
+    # ── Mandi Price Subsystem ────────────────────────────────────────────────
+    PRICE_PROVIDER: Literal["agmarknet", "seed", "mock"] = "seed"
+    AGMARKNET_API_KEY: str | None = None
+    AGMARKNET_BASE_URL: str = (
+        "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+    )
+    AGMARKNET_TIMEOUT_SECONDS: float = 10.0
+    AGMARKNET_MAX_RETRIES: int = 3
+    PRICE_CACHE_TTL_HOURS: int = 6
+
+
     # ── Logging ──────────────────────────────────────────────────────────────
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     LOG_FORMAT: Literal["json", "text"] = "json"
@@ -121,6 +132,10 @@ class Settings(BaseSettings):
             if self.OTP_MOCK_ENABLED:
                 raise ValueError(
                     "OTP_MOCK_ENABLED must be False in production — use real SMS"
+                )
+            if self.PRICE_PROVIDER == "agmarknet" and not self.AGMARKNET_API_KEY:
+                raise ValueError(
+                    "AGMARKNET_API_KEY is required when PRICE_PROVIDER is 'agmarknet' in production"
                 )
         return self
 

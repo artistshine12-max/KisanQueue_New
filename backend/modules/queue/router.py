@@ -97,18 +97,13 @@ async def generate_pass(
     queue_length = count_result.scalar() or 0
     queue_position = queue_length + 1
 
-    # Token number = today's total token count + 1 (across all statuses today)
-    today_start = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
+    # Token number = max existing token number across all centres + 1
+    token_max_result = await db.execute(
+        select(func.coalesce(func.max(QueueEntry.token_number), 0))
     )
-    token_count_result = await db.execute(
-        select(func.count(QueueEntry.id)).where(
-            QueueEntry.centre_id == centre.id,
-            QueueEntry.joined_at >= today_start,
-        )
-    )
-    token_number = (token_count_result.scalar() or 0) + 1
+    token_number = (token_max_result.scalar() or 0) + 1
     token_code = f"KQ-{token_number}"
+
 
     # ETA
     eta_result = compute_eta(

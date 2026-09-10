@@ -24,8 +24,9 @@ async def process_whatsapp_message(db: AsyncSession, phone: str, text: str) -> t
         return await handle_onboarding(db, session, text)
         
     # Returning Farmer logic
-    is_hindi = True if farmer.preferred_language == 'hi' else False
-    farmer_name = farmer.name or "Kisan"
+    user = farmer.user
+    is_hindi = (user.preferred_language == "hi") if user else True
+    farmer_name = (user.name if user else None) or "Kisan"
     
     if any(kw in text_lower for kw in ["status", "स्थिति", "mandi", "eta", "कतार"]):
         return await handle_status_query(db, farmer, is_hindi)
@@ -39,14 +40,18 @@ async def process_whatsapp_message(db: AsyncSession, phone: str, text: str) -> t
         return handle_default_help(is_hindi)
 
 async def get_farmer_by_phone(db: AsyncSession, phone: str) -> Farmer | None:
-    # Look for Farmer profile where user.phone == phone, or farmer.contact_number == phone
-    # Assuming farmer has user_id, let's query farmer joined with user if needed.
-    # For now just query farmer by their user account if phone is linked there, or mock it if phone matches mock pattern.
+    # Look for Farmer profile where user.phone == phone (supports with or without +91)
     from models.user import User
+    from sqlalchemy.orm import joinedload
+    clean_phone = phone.strip()
+    alt_phone = clean_phone[3:] if clean_phone.startswith("+91") else f"+91{clean_phone}"
     result = await db.execute(
-        select(Farmer).join(User).where(User.phone == phone)
+        select(Farmer)
+        .join(Farmer.user)
+        .options(joinedload(Farmer.user))
+        .where((User.phone == clean_phone) | (User.phone == alt_phone))
     )
-    return result.scalar()
+    return result.scalar_one_or_none()
 
 async def get_or_create_session(db: AsyncSession, phone: str) -> WhatsAppSession:
     result = await db.execute(select(WhatsAppSession).where(WhatsAppSession.phone_number == phone))

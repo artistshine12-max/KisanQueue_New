@@ -6,6 +6,7 @@ from models.base import Base
 from models.capacity_update import CapacityUpdate
 from models.centre import Centre
 from models.farmer import Farmer
+from models.mandi_price import MandiPrice
 from models.notification import Notification
 from models.officer import Officer
 from models.payment_status import PaymentStatus
@@ -31,4 +32,5 @@ __all__ = [
     "AuditLog",
     "Notification",
     "WhatsAppSession",
+    "MandiPrice",
 ]

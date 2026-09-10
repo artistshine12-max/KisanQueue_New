@@ -60,6 +60,19 @@ async def test_concurrent_join_same_farmer_same_centre(
     tok = await _farmer_token(async_client, FARMER_PHONE, FARMER_OTP)
     assert tok is not None, "Demo farmer auth failed — check seed data"
 
+    # Ensure clean fixture state: cancel any active pass for the test farmer
+    status_resp = await async_client.get(
+        "/v1/queue/my-status",
+        headers={"Authorization": f"Bearer {tok}"},
+    )
+    if status_resp.status_code == 200 and status_resp.json().get("has_active_pass"):
+        pass_id = status_resp.json().get("pass_id")
+        if pass_id:
+            await async_client.post(
+                f"/v1/queue/{pass_id}/cancel",
+                headers={"Authorization": f"Bearer {tok}"},
+            )
+
     centres_resp = await async_client.get(
         "/v1/centres",
         headers={"Authorization": f"Bearer {tok}"},
@@ -99,6 +112,17 @@ async def test_no_duplicate_queue_positions_after_concurrent_joins(
 
     if tok1 is None or tok2 is None:
         pytest.skip("Second demo farmer not in seed data — skipping concurrency test")
+
+    # Ensure clean fixture state for both farmers
+    for tok in (tok1, tok2):
+        st = await async_client.get("/v1/queue/my-status", headers={"Authorization": f"Bearer {tok}"})
+        if st.status_code == 200 and st.json().get("has_active_pass"):
+            pass_id = st.json().get("pass_id")
+            if pass_id:
+                await async_client.post(
+                    f"/v1/queue/{pass_id}/cancel",
+                    headers={"Authorization": f"Bearer {tok}"},
+                )
 
     centres_resp = await async_client.get(
         "/v1/centres",

@@ -40,10 +40,12 @@ async def test_auth_and_pass_generation_flow(async_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_officer_login_flow(async_client: AsyncClient):
+    import os
+    officer_password = os.environ.get("SEED_ADMIN_PASSWORD", "Demo@1234")
     # Officer login
     resp = await async_client.post("/v1/auth/login", json={
         "username": "officer_rajgarh",
-        "password": "KisanQueue!2026Secure"
+        "password": officer_password
     })
     assert resp.status_code == 200
     assert "access_token" in resp.json()

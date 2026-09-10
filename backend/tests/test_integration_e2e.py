@@ -8,6 +8,7 @@ Verifies:
 """
 from __future__ import annotations
 
+import os
 import time
 import pytest
 from httpx import AsyncClient
@@ -60,50 +61,44 @@ async def test_full_procurement_lifecycle_and_payout_calculation(async_client: A
     assert pass_data["queue_entry_status"] == "WAITING"
 
     # 4. Officer Login
+    officer_pass = os.environ.get("SEED_ADMIN_PASSWORD", "Demo@1234")
     officer_resp = await async_client.post(
         "/v1/auth/login",
-        json={"username": "officer_rajgarh", "password": "Demo@1234"},
+        json={"username": "officer_rajgarh", "password": officer_pass},
     )
-    if officer_resp.status_code != 200:
-        # Fallback to default dev password if configured
-        officer_resp = await async_client.post(
-            "/v1/auth/login",
-            json={"username": "officer_rajgarh", "password": "KisanQueue!2026Secure"},
-        )
-    
-    if officer_resp.status_code == 200:
-        officer_token = officer_resp.json()["access_token"]
-        officer_headers = {"Authorization": f"Bearer {officer_token}"}
+    assert officer_resp.status_code == 200, f"Officer login failed: {officer_resp.text}"
+    officer_token = officer_resp.json()["access_token"]
+    officer_headers = {"Authorization": f"Bearer {officer_token}"}
 
-        # 5. Officer Check-in via token code
-        checkin_resp = await async_client.post(
-            "/v1/officer/checkin",
-            headers=officer_headers,
-            json={"token_code": token_code},
-        )
-        assert checkin_resp.status_code == 200
-        assert checkin_resp.json()["status"] == "checked_in"
+    # 5. Officer Check-in via token code
+    checkin_resp = await async_client.post(
+        "/v1/officer/checkin",
+        headers=officer_headers,
+        json={"token_code": token_code},
+    )
+    assert checkin_resp.status_code == 200
+    assert checkin_resp.json()["status"] == "checked_in"
 
-        # 6. Officer Start Processing
-        start_resp = await async_client.post(
-            f"/v1/officer/queue/{entry_id}/start",
-            headers=officer_headers,
-        )
-        assert start_resp.status_code == 200
-        assert start_resp.json()["status"] == "processing"
+    # 6. Officer Start Processing
+    start_resp = await async_client.post(
+        f"/v1/officer/queue/{entry_id}/start",
+        headers=officer_headers,
+    )
+    assert start_resp.status_code == 200
+    assert start_resp.json()["status"] == "processing"
 
-        # 7. Officer Complete Processing — CRITICAL: verify total_amount calculation (fixes P0)
-        complete_resp = await async_client.post(
-            f"/v1/officer/queue/{entry_id}/complete",
-            headers=officer_headers,
-        )
-        assert complete_resp.status_code == 200
-        result = complete_resp.json()
-        assert result["status"] == "completed"
-        total_amount = result["total_amount"]
-        # Wheat MSP is 2275.0/Q. 40 Q * 2275.0 = 91,000.0. Must NOT be 0!
-        assert total_amount > 0, f"Expected total_amount > 0, got {total_amount} (₹0 bug detected!)"
-        assert total_amount == 91000.0 or total_amount > 0
+    # 7. Officer Complete Processing — CRITICAL: verify total_amount calculation (fixes P0)
+    complete_resp = await async_client.post(
+        f"/v1/officer/queue/{entry_id}/complete",
+        headers=officer_headers,
+    )
+    assert complete_resp.status_code == 200
+    result = complete_resp.json()
+    assert result["status"] == "completed"
+    total_amount = result["total_amount"]
+    # Wheat MSP is 2275.0/Q. 40 Q * 2275.0 = 91,000.0. Must NOT be 0!
+    assert total_amount > 0, f"Expected total_amount > 0, got {total_amount} (₹0 bug detected!)"
+    assert total_amount == 91000.0 or total_amount > 0
 
 
 @pytest.mark.asyncio

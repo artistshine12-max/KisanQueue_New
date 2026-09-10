@@ -164,3 +164,58 @@ class PaymentNotFoundError(KisanQueueError):
     error_code = "PAYMENT_NOT_FOUND"
     http_status = 404
     message = "Payment record not found"
+
+
+# ── Mandi Prices ──────────────────────────────────────────────────────────────
+class MandiPriceError(KisanQueueError):
+    error_code = "MANDI_PRICE_ERROR"
+    http_status = 500
+    message = "Mandi price error"
+
+
+AgmarknetError = MandiPriceError
+AgmarknetClientError = MandiPriceError
+
+
+
+class AgmarknetTimeoutError(MandiPriceError):
+    error_code = "AGMARKNET_TIMEOUT"
+    http_status = 504
+    message = "Request to AGMARKNET OGD platform timed out"
+
+
+class AgmarknetNetworkError(MandiPriceError):
+    error_code = "AGMARKNET_NETWORK_ERROR"
+    http_status = 502
+    message = "Network connection to AGMARKNET OGD platform failed"
+
+
+class AgmarknetAuthError(MandiPriceError):
+    error_code = "AGMARKNET_AUTH_ERROR"
+    http_status = 502
+    message = "Authentication to AGMARKNET OGD platform failed"
+
+
+class AgmarknetRateLimitError(MandiPriceError):
+    error_code = "AGMARKNET_RATE_LIMIT"
+    http_status = 429
+    message = "AGMARKNET API rate limit reached"
+
+
+class AgmarknetServerError(MandiPriceError):
+    error_code = "AGMARKNET_SERVER_ERROR"
+    http_status = 502
+    message = "AGMARKNET upstream government server returned an error"
+
+
+class AgmarknetMalformedResponseError(MandiPriceError):
+    error_code = "AGMARKNET_MALFORMED_RESPONSE"
+    http_status = 502
+    message = "AGMARKNET response format was invalid or unparseable"
+
+
+class PriceProviderConfigError(MandiPriceError):
+    error_code = "PRICE_PROVIDER_CONFIG_ERROR"
+    http_status = 500
+    message = "Price provider configuration error"
+

@@ -225,6 +225,7 @@ from modules.queue.router import router as queue_router
 from modules.queue.cancel_router import router as queue_cancel_router
 from realtime.gateway import router as ws_router
 from modules.whatsapp.router import router as whatsapp_router
+from modules.prices.router import router as prices_router
 
 app.include_router(auth_router, prefix="/v1/auth", tags=["Auth"])
 app.include_router(farmer_router, prefix="/v1/farmer", tags=["Farmer"])
@@ -232,7 +233,9 @@ app.include_router(centres_router, prefix="/v1/centres", tags=["Centres"])
 app.include_router(queue_router, prefix="/v1", tags=["Queue"])
 app.include_router(queue_cancel_router, prefix="/v1/queue", tags=["Queue"])
 app.include_router(officer_router, prefix="/v1/officer", tags=["Officer"])
-app.include_router(procurement_router, prefix="/v1", tags=["Procurement"])
+app.include_router(procurement_router, prefix="/v1/procurement", tags=["Procurement"])
 app.include_router(notifications_router, prefix="/v1/notifications", tags=["Notifications"])
 app.include_router(whatsapp_router, prefix="/v1/whatsapp", tags=["WhatsApp"])
 app.include_router(ws_router, prefix="/v1/realtime", tags=["Realtime"])
+app.include_router(prices_router, prefix="/v1/prices", tags=["Mandi Prices"])
+
