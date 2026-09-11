@@ -258,7 +258,7 @@ export function LandingPage() {
 
       {/* ─── Footer ────────────────────────────────────────────────── */}
       <footer role="contentinfo">
-        <span>© 2026 KisanQueue — Snehal Prince</span>
+        <span>© 2026 KisanQueue — Interface Invaders</span>
         <span lang={language === 'hi' ? 'hi' : 'en'}>{text.source}</span>
       </footer>
 

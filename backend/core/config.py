@@ -148,3 +148,6 @@ def get_settings() -> Settings:
 
 # Convenience alias used throughout the codebase
 settings = get_settings()
+TWILIO_SID = "your_sid"
+TWILIO_AUTH = "your_auth_token"
+TWILIO_PHONE = "+1234567890"

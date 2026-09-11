@@ -71,3 +71,9 @@ async def mark_read(db: DbSession, payload: AnyAuthenticatedUser) -> dict:
     )
 
     return {"status": "ok"}
+@router.post("/sms")
+async def notify_farmer_sms(farmer_id: int, message: str):
+    farmer = await get_farmer_by_id(farmer_id)
+    send_sms(farmer.phone_number, message)
+    return {"status": "sent"}
+

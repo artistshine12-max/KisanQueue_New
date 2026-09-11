@@ -226,6 +226,11 @@ from modules.queue.cancel_router import router as queue_cancel_router
 from realtime.gateway import router as ws_router
 from modules.whatsapp.router import router as whatsapp_router
 from modules.prices.router import router as prices_router
+from modules.notifications.router import sms_router
+from modules.centres.router import router as centres_router
+app.include_router(centres_router, prefix="/v1/centres", tags=["Centres"])
+
+app.include_router(sms_router, prefix="/v1/notifications", tags=["SMS"])
 
 app.include_router(auth_router, prefix="/v1/auth", tags=["Auth"])
 app.include_router(farmer_router, prefix="/v1/farmer", tags=["Farmer"])

@@ -114,3 +114,78 @@ async def list_centres(
         )
 
     return CentreListResponse(centres=summaries, count=len(summaries))
+from fastapi import APIRouter
+
+router = APIRouter()
+from fastapi import APIRouter
+
+router = APIRouter()
+
+sample_centres = [
+    {
+        "centre_id": 101,
+        "name": "Karnal Grain Procurement Centre",
+        "location": "Karnal, Haryana",
+        "capacity_quintals": 5000,
+        "current_queue_length": 42,
+        "contact_number": "+91-9876543210"
+    },
+    {
+        "centre_id": 102,
+        "name": "Panipat Mandi Procurement Centre",
+        "location": "Panipat, Haryana",
+        "capacity_quintals": 3500,
+        "current_queue_length": 28,
+        "contact_number": "+91-9812345678"
+    },
+    {
+        "centre_id": 103,
+        "name": "Kurukshetra MSP Procurement Centre",
+        "location": "Kurukshetra, Haryana",
+        "capacity_quintals": 4200,
+        "current_queue_length": 15,
+        "contact_number": "+91-9123456789"
+    },
+    {
+        "centre_id": 104,
+        "name": "Ambala Grain Collection Centre",
+        "location": "Ambala, Haryana",
+        "capacity_quintals": 6000,
+        "current_queue_length": 55,
+        "contact_number": "+91-9988776655"
+    },
+    {
+        "centre_id": 105,
+        "name": "Delhi Azadpur Procurement Centre",
+        "location": "Delhi",
+        "capacity_quintals": 7000,
+        "current_queue_length": 63,
+        "contact_number": "+91-9876501234"
+    },
+    {
+        "centre_id": 106,
+        "name": "Hisar Grain Procurement Centre",
+        "location": "Hisar, Haryana",
+        "capacity_quintals": 4800,
+        "current_queue_length": 34,
+        "contact_number": "+91-9765432109"
+    },
+    {
+        "centre_id": 107,
+        "name": "Sonipat MSP Procurement Centre",
+        "location": "Sonipat, Haryana",
+        "capacity_quintals": 5200,
+        "current_queue_length": 22,
+        "contact_number": "+91-9654321098"
+    }
+]
+
+@router.get("/nearby")
+async def get_nearby_centres():
+    return sample_centres
+
+
+
+@router.get("/nearby")
+async def get_nearby_centres():
+    return sample_centres
