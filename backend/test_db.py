@@ -24,7 +24,7 @@ async def main():
         async with engine.begin() as conn:
             await conn.execute(text("SELECT 1"))
             await conn.execute(text("SELECT 2"))
-        print(f"Database connectivity verified successfully!")
+        print("Database connectivity verified successfully!")
     except Exception as e:
         print(f"Connection test failed: {e}")
     finally:
