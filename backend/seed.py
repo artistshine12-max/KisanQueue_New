@@ -17,7 +17,6 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 import json
 import os
-import sys
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -48,7 +47,7 @@ engine = create_async_engine(
 Session = async_sessionmaker(engine, expire_on_commit=False)
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── Helpers ─────────────────────────────────────────────────────────────
 def uid() -> str:
     return str(uuid.uuid4())
 
@@ -62,7 +61,7 @@ def today_at(hour: int, minute: int = 0) -> datetime:
     return t
 
 
-# ── Seed data ─────────────────────────────────────────────────────────────────
+# ── Seed data ───────────────────────────────────────────────────────────
 CENTRES = [
     {
         "id": "centre-001",
@@ -184,7 +183,7 @@ PAYMENT_STATUS_DATA = [
 ]
 
 
-# ── Main seed function ─────────────────────────────────────────────────────────
+# ── Main seed function ───────────────────────────────────────────────────────
 async def seed() -> None:
     from sqlalchemy import text
 
